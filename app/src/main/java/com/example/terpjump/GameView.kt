@@ -13,6 +13,7 @@ class GameView : View {
         super.onDraw(canvas)
 
         // draw game view here
+
     }
 
     companion object {
