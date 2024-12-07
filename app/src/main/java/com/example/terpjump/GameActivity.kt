@@ -8,17 +8,35 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import java.util.Timer
 import android.content.SharedPreferences
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import androidx.core.graphics.rotationMatrix
 
 // GameActivity handles the game screen
-class GameActivity : AppCompatActivity() {
+class GameActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var gameView : GameView
     private lateinit var game : Game
+    private lateinit var timer : Timer
+
+    private lateinit var sensorManager: SensorManager
+//    private var accelerometer : Sensor? =  null
+//    private var gyroscope : Sensor? = null
+    private var rotationSensor : Sensor? = null
+    private var tiltX : Float = 0f
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
 
         buildViewByCode()
+
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+//        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+//        gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
+        rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
 
         if(game.gameOver()) {
             gameOver()
@@ -57,5 +75,48 @@ class GameActivity : AppCompatActivity() {
 
     fun updateModel() {
         game.update(this)
+    }
+
+    // Sensor Event Listener functions
+    override fun onResume() {
+        super.onResume()
+
+        rotationSensor?.also { rotation ->
+            sensorManager.registerListener(this, rotation, SensorManager.SENSOR_DELAY_GAME)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        sensorManager.unregisterListener(this)
+    }
+
+    override fun onSensorChanged(event : SensorEvent?) {
+        // TODO: DOESNT WORK :(
+//        event?.let {
+//            if (it.sensor.type == Sensor.TYPE_ROTATION_VECTOR) {
+//                val rotationMatrix = FloatArray(9)
+//                val orientationAngles = FloatArray(3)
+//
+//                SensorManager.getRotationMatrixFromVector(rotationMatrix, it.values)
+//                SensorManager.getOrientation(rotationMatrix, orientationAngles)
+//
+//                var roll = orientationAngles[2]
+////                tiltX = roll * (180 / Math.PI).toFloat()
+//                tiltX = Math.toDegrees(roll.toDouble()).toFloat()
+//
+//                game.getPlayer().setMovement(tiltX)
+//
+////                Log.d("MA", "X: ${rotationX}, Y: ${rotationY}, Z: ${rotationZ}")
+//                Log.d("MA", "TiltX: ${tiltX}, Pitch: ${orientationAngles[1]}, Roll: ${roll}")
+//
+//            }
+//        }
+
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        // Not used but needed to override
     }
 }

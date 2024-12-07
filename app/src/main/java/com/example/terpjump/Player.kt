@@ -7,6 +7,8 @@ class Player {
     private var x : Float = 480f
     private var y : Float = 1900f
 
+    private var movement : Float = 0f // x movement speed
+
     fun getX() : Float {
         return this.x
     }
@@ -38,4 +40,13 @@ class Player {
     fun isJumping() : Boolean {
         return this.isJumping
     }
+
+    fun setMovement(tiltX : Float) {
+        movement = tiltX * 5f
+    }
+
+    fun getMovement() : Float {
+        return movement
+    }
+
 }

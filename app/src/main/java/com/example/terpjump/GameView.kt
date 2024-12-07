@@ -2,6 +2,8 @@ package com.example.terpjump
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -17,7 +19,10 @@ class GameView : View {
     private var width : Int = 0
     private var height : Int = 0
 
-    constructor (context:Context, width:Int, height:Int) : super(context) {
+    private val playerBitmap : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.doodle_left)
+    private val platformBitmap : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.blue_platform)
+
+    constructor (context : Context, width : Int, height : Int) : super(context) {
         this.width = width
         this.height = height
 
@@ -50,7 +55,11 @@ class GameView : View {
             val pWidth : Float = p.getWidth()
             val pHeight : Float = p.getHeight()
 
-            canvas.drawRect(pX, pY, pX + pWidth, pY + pHeight, paint)
+//            canvas.drawRect(pX, pY, pX + pWidth, pY + pHeight, paint)
+            val platformBitmap : Bitmap = Bitmap.createScaledBitmap(platformBitmap, pWidth.toInt(), pHeight.toInt(), false)
+//            var platformBitmap : Bitmap = Bitmap.createBitmap(platformBitmap, pX.toInt(), pY.toInt(), (pX + pWidth).toInt(), (pY + pWidth).toInt())
+            canvas.drawBitmap(platformBitmap, pX, pY, paint)
+
         }
     }
 
@@ -59,7 +68,8 @@ class GameView : View {
         val playerX: Float = player.getX()
         var playerY: Float = player.getY()
 
-        canvas.drawRect(playerX, playerY, playerX + 100, playerY + 100, paint)
+//        canvas.drawRect(playerX, playerY, playerX + 100, playerY + 100, paint)
+        canvas.drawBitmap(playerBitmap, playerX, playerY, paint)
     }
 
     fun drawScore(canvas: Canvas) {
