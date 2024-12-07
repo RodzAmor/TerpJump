@@ -90,13 +90,15 @@ class Game(context: Context, highScore: Int) {
         }
 
         // Update player
-        val playerX: Float = player.getX()
+        var playerX: Float = player.getX()
         var playerY: Float = player.getY()
         val jumpVelocity : Float = player.getJumpVelocity()
         val gravity : Float = player.getGravity()
 
         player.setJumpVelocity(jumpVelocity + gravity) // update jump acceleration
         playerY += jumpVelocity // update player Y position
+//        playerX += player.getMovement() // update player S position
+        playerX += 1
 
         // Check for collision with platforms
         for (p in platforms) {
@@ -127,7 +129,9 @@ class Game(context: Context, highScore: Int) {
                 p.movePlatformDown(offset) // moves platform down instead of moving the player up
             }
         }
+
         player.setY(playerY)
+        player.setX(playerX)
     }
 
     fun updatePreferences(context: Context) {
