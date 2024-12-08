@@ -44,12 +44,7 @@ class Player {
 
     fun setMovement(tiltX : Float) {
         movement = tiltX * 5f
-        if (movement > 0) {
-            goingLeft = true
-        } else {
-            goingLeft = false
-        }
-
+        goingLeft = movement > 0
     }
 
     fun getMovement() : Float {

@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import java.util.Timer
 import android.content.SharedPreferences
+import android.content.pm.ActivityInfo
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -23,7 +24,7 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var accelerometer : Sensor
 //    private var accelerometer : Sensor? =  null
 //    private var gyroscope : Sensor? = null
-    private var rotationSensor : Sensor? = null
+//    private var rotationSensor : Sensor? = null
     private var tiltX : Float = 0f
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,23 +36,25 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)!!
 
-        if(game.gameOver()) {
-            gameOver()
-        }
+        // Prevents the screen rotation during accelerometer testing
+        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
     }
 
     // Called when the user is active on the app, starts task/animation
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        var timer : Timer = Timer()
-        var task : GameTimerTask = GameTimerTask(this)
-        timer.schedule(task, 0L, GameView.DELTA_TIME.toLong())
-    }
+//    override fun onWindowFocusChanged(hasFocus: Boolean) {
+//        super.onWindowFocusChanged(hasFocus)
+//        var timer : Timer = Timer()
+//        var task : GameTimerTask = GameTimerTask(this)
+//        timer.schedule(task, 0L, GameView.DELTA_TIME.toLong())
+//        timer.scheduleAtFixedRate(task, 0L, GameView.DELTA_TIME.toLong())
+//    }
 
     // Ends the game (starts activity_end view)
     fun gameOver() {
         var intent : Intent = Intent(this, EndActivity::class.java)
         this.startActivity(intent)
+
+        finish()
     }
 
     fun buildViewByCode() {
@@ -72,10 +75,10 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
 
     fun updateModel() {
         game.update(this)
-        // Commenting this out for testing
-//        if (game.gameOver()) {
-//            gameOver()
-//        }
+
+        if (game.gameOver()) {
+            gameOver()
+        }
     }
 
     // Sensor Event Listener functions
@@ -86,24 +89,33 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME)
         }
 
+        var timer : Timer = Timer()
+        var task : GameTimerTask = GameTimerTask(this)
+        timer.schedule(task, 0L, GameView.DELTA_TIME.toLong())
     }
 
     override fun onPause() {
         super.onPause()
 
         sensorManager.unregisterListener(this)
+
+        timer.cancel()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        timer.cancel()
     }
 
     override fun onSensorChanged(event : SensorEvent?) {
-        Log.w("GameActivity", "RUNS")
         event?.let {
             if (it.sensor.type == Sensor.TYPE_ACCELEROMETER) {
+//                Log.d("GameActivity", "TiltX: " + (-it.values[0]).toString())
                 tiltX = -it.values[0] // Invert X to match natural movement
                 game.getPlayer().setMovement(tiltX)
             }
         }
     }
-
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
         // Not used but needed to override

@@ -93,8 +93,6 @@ class Game(context: Context, highScore: Int) {
             }
         }
 
-
-
         // Update player
         var playerX: Float = player.getX()
         var playerY: Float = player.getY()
@@ -104,7 +102,7 @@ class Game(context: Context, highScore: Int) {
         player.setJumpVelocity(jumpVelocity + gravity) // update jump acceleration
         playerY += jumpVelocity // update player Y position
         playerX += player.getMovement() // update player X position
-        playerX += 1
+//        playerX += 1
 
         // Check for collision with platforms
         for (p in platforms) {
@@ -140,6 +138,8 @@ class Game(context: Context, highScore: Int) {
         if (playerY > screenHeight) {
             gameOver = true
         }
+
+//        Log.d("DEBUG", gameOver.toString())
 
         // Screen wrapping
         if (playerX < -100) { // When player goes off left side

@@ -1,6 +1,7 @@
 package com.example.terpjump
 
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.widget.Button
 import android.widget.LinearLayout
@@ -22,11 +23,16 @@ class EndActivity : AppCompatActivity() {
         playAgainButton.setOnClickListener{ playAgain() }
 
         setupAd()
+
+        // Prevents the screen rotation during accelerometer testing
+//        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
     }
 
     // Starts the game again (starts activity_game view)
     fun playAgain() {
-        this.finish()
+        val intent : Intent = Intent(this, GameActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 
     fun setupAd() {

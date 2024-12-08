@@ -60,7 +60,7 @@
         android:layout_weight="1"
         android:background="#CCCC"
         android:id="@+id/ad_view"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         />
 
 </LinearLayout>
