@@ -2,10 +2,11 @@ package com.example.terpjump
 
 class Player {
     private var jumpVelocity : Float = 0f
-    private var gravity : Float = 1f
+    private var gravity : Float = 0.6f
     private var isJumping : Boolean = true
     private var x : Float = 480f
     private var y : Float = 1900f
+    private var goingLeft : Boolean = true
 
     private var movement : Float = 0f // x movement speed
 
@@ -43,10 +44,20 @@ class Player {
 
     fun setMovement(tiltX : Float) {
         movement = tiltX * 5f
+        if (movement > 0) {
+            goingLeft = true
+        } else {
+            goingLeft = false
+        }
+
     }
 
     fun getMovement() : Float {
         return movement
+    }
+
+    fun getDirection() : Boolean {
+        return goingLeft
     }
 
 }

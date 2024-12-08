@@ -18,7 +18,14 @@ class GameView : View {
     private lateinit var paint : Paint
     private var width : Int = 0
     private var height : Int = 0
+    private lateinit var doodlerChoice : String
 
+    private val playerBitmapLeft : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.doodle_left)
+    private val playerBitmapRight : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.doodle_right)
+    private val playerBitmapTerrapinLeft : Bitmap = BitmapFactory.decodeResource(resources,
+        R.drawable.terrapin_left
+    )
+    private val playerBitmapTerrapinRight : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.terrapin_right)
     private val playerBitmap : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.doodle_left)
     private val platformBitmap : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.blue_platform)
 
@@ -29,7 +36,7 @@ class GameView : View {
         // set local persistent data for high score
         var pref : SharedPreferences = context.getSharedPreferences(context.packageName + "_preferences", Context.MODE_PRIVATE)
         var highScore = pref.getInt(Game.HIGH_SCORE, 0)
-
+        doodlerChoice = pref.getString(MainActivity.DOODLER_PREFERENCE, "terrapin").toString()
         // initialize game
         game = Game(context, highScore)
 
@@ -67,8 +74,20 @@ class GameView : View {
         val player = game.getPlayer()
         val playerX: Float = player.getX()
         var playerY: Float = player.getY()
+        var playerBitmap = playerBitmap
 
 //        canvas.drawRect(playerX, playerY, playerX + 100, playerY + 100, paint)
+        if (doodlerChoice == "terrapin") {
+            playerBitmap = when (player.getDirection()) {
+                true -> playerBitmapTerrapinRight
+                false -> playerBitmapTerrapinLeft
+            }
+        } else {
+            playerBitmap = when (player.getDirection()) {
+                true -> playerBitmapRight
+                false -> playerBitmapLeft
+            }
+        }
         canvas.drawBitmap(playerBitmap, playerX, playerY, paint)
     }
 
