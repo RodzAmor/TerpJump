@@ -32,9 +32,9 @@ class MainActivity : AppCompatActivity() {
         startButton = findViewById(R.id.start_button)
         startButton.setOnClickListener{ startGame() }
 
-        val pref = getSharedPreferences("game_preferences", Context.MODE_PRIVATE)
+        var pref : SharedPreferences = getSharedPreferences("game_preferences", Context.MODE_PRIVATE)
         var editor : SharedPreferences.Editor = pref.edit()
-        val highScore = pref.getInt(HIGH_SCORE, 0)
+        val highScore = pref.getInt(Game.HIGH_SCORE, 0)
 
         highScoreTV.text = highScore.toString()
         val selectedDoodler = pref.getString(DOODLER_PREFERENCE, "terrapin")
@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
         doodlerChoices.setOnCheckedChangeListener { _, checkedId ->
             val selection = when (checkedId) {
                 R.id.terrapin_doodler_radio -> "terrapin"
-                else -> "original"
+                else -> "doodler"
             }
 
             editor.putString(DOODLER_PREFERENCE, selection)
@@ -61,10 +61,10 @@ class MainActivity : AppCompatActivity() {
     fun startGame() {
         var intent : Intent = Intent(this, GameActivity::class.java)
         this.startActivity(intent)
+        this.finish()
     }
 
     companion object {
-        const val HIGH_SCORE = "high_score"
         const val DOODLER_PREFERENCE = "doodler_selection"
     }
 

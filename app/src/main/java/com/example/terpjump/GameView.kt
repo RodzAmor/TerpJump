@@ -33,7 +33,7 @@ class GameView : View {
         this.height = height
 
         // set local persistent data for high score
-        var pref : SharedPreferences = context.getSharedPreferences(context.packageName + "_preferences", Context.MODE_PRIVATE)
+        var pref : SharedPreferences = context.getSharedPreferences("game_preferences", Context.MODE_PRIVATE)
         var highScore = pref.getInt(Game.HIGH_SCORE, 0)
         doodlerChoice = pref.getString(MainActivity.DOODLER_PREFERENCE, "terrapin").toString()
         Log.d("MainActivity", doodlerChoice)

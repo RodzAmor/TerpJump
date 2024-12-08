@@ -10,29 +10,55 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="3">
+        android:layout_weight="1">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/score"
             android:id="@+id/score"
-            android:gravity="center"
+            android:textSize="30dp"
+            android:paddingLeft="10dp"
             />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/high_score"
             android:id="@+id/high_score"
+            android:textSize="30dp"
 
             android:layout_below="@+id/score"
             android:layout_centerHorizontal="true"
+            android:paddingLeft="10dp"
             />
+    </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Home"
+            android:id="@+id/home"
+            android:textSize="30dp"
+
+            android:layout_below="@+id/high_score"
+            android:layout_centerHorizontal="true"
+            />
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/play_again"
             android:id="@+id/play_again"
+            android:textSize="30dp"
 
             android:layout_below="@+id/high_score"
             android:layout_centerHorizontal="true"
@@ -42,7 +68,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="6"
+        android:layout_weight="8"
         android:background="#FF0">
         <TextView
             android:layout_width="wrap_content"
@@ -53,6 +79,7 @@
             android:layout_centerHorizontal="true"
             />
     </LinearLayout>
+
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -24,10 +24,10 @@ class Game(context: Context, highScore: Int) {
         screenHeight = metrics.heightPixels
         val platformSpacing = 200f
         var lastPlatformY = screenHeight.toFloat()
-        // initialize 15 random platforms
+        // initialize 12 random platforms
         platforms = ArrayList()
 
-        for(i in 0..15) {
+        for(i in 0..12) {
             val p = Platform()
             if(i == 0) { // platform that the player will spawn on
                 p.setX(450f)
@@ -153,9 +153,10 @@ class Game(context: Context, highScore: Int) {
     }
 
     fun updatePreferences(context: Context) {
-        var pref : SharedPreferences = context.getSharedPreferences(context.packageName + "_preferences", Context.MODE_PRIVATE)
+        var pref : SharedPreferences = context.getSharedPreferences("game_preferences", Context.MODE_PRIVATE)
         var editor : SharedPreferences.Editor = pref.edit()
         editor.putInt(HIGH_SCORE, highScore)
+        editor.apply()
         editor.commit()
     }
 

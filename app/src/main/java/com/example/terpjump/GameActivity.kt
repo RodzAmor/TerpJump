@@ -9,15 +9,20 @@ import androidx.appcompat.app.AppCompatActivity
 import java.util.Timer
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
+import android.graphics.Color
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.widget.ProgressBar
+import android.widget.RelativeLayout
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.rotationMatrix
 
 // GameActivity handles the game screen
 class GameActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var gameView : GameView
+    private lateinit var progressBar : ProgressBar
     private lateinit var game : Game
     private lateinit var timer : Timer
     private lateinit var sensorManager : SensorManager
@@ -52,6 +57,8 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
     // Ends the game (starts activity_end view)
     fun gameOver() {
         var intent : Intent = Intent(this, EndActivity::class.java)
+        intent.putExtra("SCORE", game.getScore())
+        intent.putExtra("HIGH_SCORE", game.getHighScore())
         this.startActivity(intent)
 
         finish()
@@ -64,13 +71,29 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
         val rectangle : Rect = Rect(0, 0, 0, 0)
         window.decorView.getWindowVisibleDisplayFrame(rectangle)
 
+        val rootLayout = RelativeLayout(this)
+
         gameView = GameView(this, width, height - rectangle.top)
         game = gameView.getGame()
-        setContentView(gameView)
+        rootLayout.addView(gameView)
+
+        // Add ProgressBar
+        progressBar = ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal)
+        progressBar.max = game.getHighScore()
+        progressBar.progress = game.getScore()
+        val layoutParams = RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.MATCH_PARENT, // width
+            50 // y
+        )
+        progressBar.layoutParams = layoutParams
+        rootLayout.addView(progressBar)
+
+        setContentView(rootLayout)
     }
 
     fun updateView() {
         gameView.postInvalidate()
+        progressBar.progress = game.getScore()
     }
 
     fun updateModel() {
@@ -89,7 +112,7 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME)
         }
 
-        var timer : Timer = Timer()
+        timer = Timer()
         var task : GameTimerTask = GameTimerTask(this)
         timer.schedule(task, 0L, GameView.DELTA_TIME.toLong())
     }
