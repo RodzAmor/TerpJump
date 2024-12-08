@@ -4,6 +4,7 @@ import android.util.DisplayMetrics
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.RectF
+import android.util.Log
 import kotlin.random.Random
 
 class Game(context: Context, highScore: Int) {
@@ -21,7 +22,8 @@ class Game(context: Context, highScore: Int) {
         val metrics : DisplayMetrics = context.resources.displayMetrics
         screenWidth = metrics.widthPixels
         screenHeight = metrics.heightPixels
-
+        val platformSpacing = 200f
+        var lastPlatformY = screenHeight.toFloat()
         // initialize 15 random platforms
         platforms = ArrayList()
 
@@ -32,7 +34,9 @@ class Game(context: Context, highScore: Int) {
                 p.setY(2000f)
             } else {
                 p.setX(Random.nextFloat() * (screenWidth - p.getWidth()))
-                p.setY(Random.nextFloat() * (screenHeight - p.getHeight()))
+                lastPlatformY -= platformSpacing
+                p.setX(Random.nextFloat() * (screenWidth - p.getWidth()))
+                p.setY(lastPlatformY)
             }
             addPlatform(p)
         }
@@ -97,8 +101,8 @@ class Game(context: Context, highScore: Int) {
 
         player.setJumpVelocity(jumpVelocity + gravity) // update jump acceleration
         playerY += jumpVelocity // update player Y position
-//        playerX += player.getMovement() // update player S position
-        playerX += 1
+        playerX += player.getMovement() // update player X position
+//        playerX += 1
 
         // Check for collision with platforms
         for (p in platforms) {
@@ -128,6 +132,20 @@ class Game(context: Context, highScore: Int) {
             for(p in platforms) {
                 p.movePlatformDown(offset) // moves platform down instead of moving the player up
             }
+        }
+
+        // End game if player goes below the screen
+        if (playerY > screenHeight) {
+            gameOver = true
+        }
+
+//        Log.d("DEBUG", gameOver.toString())
+
+        // Screen wrapping
+        if (playerX < -100) { // When player goes off left side
+            playerX = screenWidth.toFloat()
+        } else if (playerX > screenWidth) { // When player goes off right side
+            playerX = -100f
         }
 
         player.setY(playerY)

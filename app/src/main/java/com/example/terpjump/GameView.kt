@@ -18,6 +18,12 @@ class GameView : View {
     private lateinit var paint : Paint
     private var width : Int = 0
     private var height : Int = 0
+    private lateinit var doodlerChoice : String
+
+    private val playerBitmapLeft : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.doodle_left)
+    private val playerBitmapRight : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.doodle_right)
+    private val playerBitmapTerrapinLeft : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.terrapin_left)
+    private val playerBitmapTerrapinRight : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.terrapin_right)
 
     private val playerBitmap : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.doodle_left)
     private val platformBitmap : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.blue_platform)
@@ -29,6 +35,8 @@ class GameView : View {
         // set local persistent data for high score
         var pref : SharedPreferences = context.getSharedPreferences(context.packageName + "_preferences", Context.MODE_PRIVATE)
         var highScore = pref.getInt(Game.HIGH_SCORE, 0)
+        doodlerChoice = pref.getString(MainActivity.DOODLER_PREFERENCE, "terrapin").toString()
+        Log.d("MainActivity", doodlerChoice)
 
         // initialize game
         game = Game(context, highScore)
@@ -39,6 +47,7 @@ class GameView : View {
         paint.color = Color.BLACK
         paint.strokeWidth = 20f
         paint.textSize = 60f
+
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -55,11 +64,8 @@ class GameView : View {
             val pWidth : Float = p.getWidth()
             val pHeight : Float = p.getHeight()
 
-//            canvas.drawRect(pX, pY, pX + pWidth, pY + pHeight, paint)
             val platformBitmap : Bitmap = Bitmap.createScaledBitmap(platformBitmap, pWidth.toInt(), pHeight.toInt(), false)
-//            var platformBitmap : Bitmap = Bitmap.createBitmap(platformBitmap, pX.toInt(), pY.toInt(), (pX + pWidth).toInt(), (pY + pWidth).toInt())
             canvas.drawBitmap(platformBitmap, pX, pY, paint)
-
         }
     }
 
@@ -67,8 +73,20 @@ class GameView : View {
         val player = game.getPlayer()
         val playerX: Float = player.getX()
         var playerY: Float = player.getY()
+        var playerBitmap = playerBitmap
 
-//        canvas.drawRect(playerX, playerY, playerX + 100, playerY + 100, paint)
+        if (doodlerChoice.equals("terrapin")) {
+            playerBitmap = when (player.getDirection()) {
+                true -> playerBitmapTerrapinRight
+                false -> playerBitmapTerrapinLeft
+            }
+        } else {
+            playerBitmap = when (player.getDirection()) {
+                true -> playerBitmapRight
+                false -> playerBitmapLeft
+            }
+        }
+
         canvas.drawBitmap(playerBitmap, playerX, playerY, paint)
     }
 

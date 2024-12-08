@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import java.util.Timer
 import android.content.SharedPreferences
+import android.content.pm.ActivityInfo
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -19,13 +20,12 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var gameView : GameView
     private lateinit var game : Game
     private lateinit var timer : Timer
-
-    private lateinit var sensorManager: SensorManager
+    private lateinit var sensorManager : SensorManager
+    private lateinit var accelerometer : Sensor
 //    private var accelerometer : Sensor? =  null
 //    private var gyroscope : Sensor? = null
-    private var rotationSensor : Sensor? = null
+//    private var rotationSensor : Sensor? = null
     private var tiltX : Float = 0f
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,28 +33,28 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
 
         buildViewByCode()
 
-        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-//        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-//        gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
-        rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)!!
 
-        if(game.gameOver()) {
-            gameOver()
-        }
+        // Prevents the screen rotation during accelerometer testing
+        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
     }
 
     // Called when the user is active on the app, starts task/animation
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        var timer : Timer = Timer()
-        var task : GameTimerTask = GameTimerTask(this)
-        timer.schedule(task, 0L, GameView.DELTA_TIME.toLong())
-    }
+//    override fun onWindowFocusChanged(hasFocus: Boolean) {
+//        super.onWindowFocusChanged(hasFocus)
+//        var timer : Timer = Timer()
+//        var task : GameTimerTask = GameTimerTask(this)
+//        timer.schedule(task, 0L, GameView.DELTA_TIME.toLong())
+//        timer.scheduleAtFixedRate(task, 0L, GameView.DELTA_TIME.toLong())
+//    }
 
     // Ends the game (starts activity_end view)
     fun gameOver() {
         var intent : Intent = Intent(this, EndActivity::class.java)
         this.startActivity(intent)
+
+        finish()
     }
 
     fun buildViewByCode() {
@@ -75,45 +75,46 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
 
     fun updateModel() {
         game.update(this)
+
+        if (game.gameOver()) {
+            gameOver()
+        }
     }
 
     // Sensor Event Listener functions
     override fun onResume() {
         super.onResume()
 
-        rotationSensor?.also { rotation ->
-            sensorManager.registerListener(this, rotation, SensorManager.SENSOR_DELAY_GAME)
+        accelerometer.let {
+            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME)
         }
+
+        var timer : Timer = Timer()
+        var task : GameTimerTask = GameTimerTask(this)
+        timer.schedule(task, 0L, GameView.DELTA_TIME.toLong())
     }
 
     override fun onPause() {
         super.onPause()
 
         sensorManager.unregisterListener(this)
+
+        timer.cancel()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        timer.cancel()
     }
 
     override fun onSensorChanged(event : SensorEvent?) {
-        // TODO: DOESNT WORK :(
-//        event?.let {
-//            if (it.sensor.type == Sensor.TYPE_ROTATION_VECTOR) {
-//                val rotationMatrix = FloatArray(9)
-//                val orientationAngles = FloatArray(3)
-//
-//                SensorManager.getRotationMatrixFromVector(rotationMatrix, it.values)
-//                SensorManager.getOrientation(rotationMatrix, orientationAngles)
-//
-//                var roll = orientationAngles[2]
-////                tiltX = roll * (180 / Math.PI).toFloat()
-//                tiltX = Math.toDegrees(roll.toDouble()).toFloat()
-//
-//                game.getPlayer().setMovement(tiltX)
-//
-////                Log.d("MA", "X: ${rotationX}, Y: ${rotationY}, Z: ${rotationZ}")
-//                Log.d("MA", "TiltX: ${tiltX}, Pitch: ${orientationAngles[1]}, Roll: ${roll}")
-//
-//            }
-//        }
-
+        event?.let {
+            if (it.sensor.type == Sensor.TYPE_ACCELEROMETER) {
+//                Log.d("GameActivity", "TiltX: " + (-it.values[0]).toString())
+                tiltX = -it.values[0] // Invert X to match natural movement
+                game.getPlayer().setMovement(tiltX)
+            }
+        }
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
