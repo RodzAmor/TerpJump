@@ -25,6 +25,8 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -185,14 +187,25 @@ class EndActivity : AppCompatActivity() {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     var leaderboard : String = "Name : Score : Rating \n"
                     if (snapshot.exists()) {
-                        for (scoreSnapshot in snapshot.children) {
-                            val name = scoreSnapshot.child("name").getValue(String::class.java)
-                            val score = scoreSnapshot.child("score").getValue(Int::class.java)
-                            val rating = scoreSnapshot.child("rating").getValue(Float::class.java)
+                        var leaderboardEntries = mutableListOf<Triple<String, Int, Float>>()
 
-                            Log.d("DEBUG", name + score.toString() + rating.toString())
+                        for (scoreSnapshot in snapshot.children) {
+                            val name = scoreSnapshot.child("name").getValue(String::class.java) ?: ""
+                            val score = scoreSnapshot.child("score").getValue(Int::class.java) ?: 0
+                            val rating = scoreSnapshot.child("rating").getValue(Float::class.java) ?: 0f
+
+//                            Log.d("DEBUG", name + score.toString() + rating.toString())
                             // We can also change how the leaderboard is displayed
-                            leaderboard += "${name} : ${score} : ${rating} \n"
+//                            leaderboard += "${name} : ${score} : ${rating} \n"
+
+                            leaderboardEntries.add(Triple(name, score, rating))
+                        }
+
+                        leaderboardEntries.sortByDescending { it.second }
+
+                        for (leaderboardEntry in leaderboardEntries) {
+                            leaderboard += "${leaderboardEntry.first} : ${leaderboardEntry.second}" +
+                                    " : ${leaderboardEntry.third} \n"
                         }
                     } else {
                         Log.d("DEBUG", "Snapshot does not exist")
