@@ -1,8 +1,12 @@
 package com.example.terpjump
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.location.Geocoder
+import android.location.Location
 import android.os.Bundle
 import android.renderscript.Sampler.Value
 import android.util.Log
@@ -12,7 +16,12 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.RatingBar
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
@@ -37,6 +46,9 @@ class EndActivity : AppCompatActivity() {
     private lateinit var playerNameET : EditText
     private lateinit var starRating : RatingBar
     private lateinit var submitButton : Button
+    private lateinit var launcher : ActivityResultLauncher<String>
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var location : String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,14 +70,59 @@ class EndActivity : AppCompatActivity() {
         val score : Int = getIntent().getIntExtra("SCORE", 0)
         gameScoreTV.text = "Score: " + score.toString()
 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Log.w("EndActivity", "Location Permission Granted")
+            location = fetchLocation()
+        } else {
+            Log.w("EndActivity", "Location Permission Not Granted, ask for it")
+            var contract : ActivityResultContracts.RequestPermission =
+                ActivityResultContracts.RequestPermission()
+            var results : Results = Results()
+            launcher = registerForActivityResult(contract, results)
+            launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+
         submitButton.setOnClickListener{ submitScore() }
         playAgainButton.setOnClickListener{ playAgain() }
         homeButton.setOnClickListener{ home() }
 
-        var pref : SharedPreferences = getSharedPreferences("game_preferences", Context.MODE_PRIVATE)
+        var pref : SharedPreferences = getSharedPreferences("game_preferences",
+            Context.MODE_PRIVATE)
         var editor : SharedPreferences.Editor = pref.edit()
         val highScore = pref.getInt(Game.HIGH_SCORE, 0)
 
+    }
+
+    private fun fetchLocation() : String {
+        Log.w("EndActivityDebug", "runs")
+        var latitude = 0.0
+        var longitude = 0.0
+        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+            if (location != null) {
+                latitude = location.latitude
+                longitude = location.longitude
+                Log.w("EndActivity", "Lat: $latitude, Long: $longitude")
+            } else {
+                Log.w("EndActivity", "Failed to get location")
+            }
+        }.addOnFailureListener {
+            Log.e("EndActivity", "Error getting location: ${it.message}")
+        }
+        return "Lat: $latitude, Long: $longitude"
+    }
+
+    inner class Results : ActivityResultCallback<Boolean> {
+        override fun onActivityResult(result: Boolean) {
+            if (result) {
+                Log.w("MainActivity", "User gave permission")
+            } else {
+                Log.w("MainActivity", "User permission denied")
+                Toast.makeText(this@EndActivity, "Location permission is required",
+                    Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     fun submitScore() {
@@ -75,7 +132,8 @@ class EndActivity : AppCompatActivity() {
         if (name.isNotBlank()) {
             // send all data to firebase, including score
             val score : Int = getIntent().getIntExtra("SCORE", 0)
-            Log.w("EndActivity", "Name: $name, Rating: $rating, Score: $score, Location:")
+            Log.w("EndActivity", "Name: $name, Rating: $rating, Score: $score, " +
+                    "Location: $location")
 
             // Layout transition
             playerInputLayout.visibility = View.GONE
