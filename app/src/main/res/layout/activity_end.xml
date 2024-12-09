@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -8,6 +9,36 @@
     tools:context=".MainActivity">
 
     <LinearLayout
+        android:id="@+id/player_input_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="visible">
+
+        <EditText
+            android:id="@+id/player_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Enter your name"
+            android:textSize="30sp"
+            android:inputType="textPersonName" />
+
+        <RatingBar
+            android:id="@+id/rating_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/submit_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Submit"
+            android:textSize="30sp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/game_over_layout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
@@ -16,7 +47,7 @@
             android:layout_height="wrap_content"
             android:text="@string/score"
             android:id="@+id/score"
-            android:textSize="30dp"
+            android:textSize="30sp"
             android:paddingLeft="10dp"
             />
     </LinearLayout>
@@ -30,7 +61,7 @@
             android:layout_height="wrap_content"
             android:text="@string/high_score"
             android:id="@+id/high_score"
-            android:textSize="30dp"
+            android:textSize="30sp"
 
             android:layout_below="@+id/score"
             android:layout_centerHorizontal="true"
@@ -48,7 +79,7 @@
             android:layout_height="wrap_content"
             android:text="Home"
             android:id="@+id/home"
-            android:textSize="30dp"
+            android:textSize="30sp"
 
             android:layout_below="@+id/high_score"
             android:layout_centerHorizontal="true"
@@ -58,7 +89,7 @@
             android:layout_height="wrap_content"
             android:text="@string/play_again"
             android:id="@+id/play_again"
-            android:textSize="30dp"
+            android:textSize="30sp"
 
             android:layout_below="@+id/high_score"
             android:layout_centerHorizontal="true"

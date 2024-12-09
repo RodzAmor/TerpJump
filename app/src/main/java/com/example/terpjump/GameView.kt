@@ -82,8 +82,8 @@ class GameView : View {
             }
         } else {
             playerBitmap = when (player.getDirection()) {
-                true -> playerBitmapRight
-                false -> playerBitmapLeft
+                true -> playerBitmapLeft
+                false -> playerBitmapRight
             }
         }
 

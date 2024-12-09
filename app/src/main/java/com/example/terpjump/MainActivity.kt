@@ -60,6 +60,26 @@ class MainActivity : AppCompatActivity() {
             Log.w("MainActivity", "Doodler selected: " + selection)
             editor.apply()
         }
+
+        var firebase : FirebaseDatabase = FirebaseDatabase.getInstance()
+        var reference : DatabaseReference = firebase.getReference("TerpJumpTest")
+        reference.setValue("This works")
+
+        // set up event handling
+        var listener : DataListener = DataListener()
+        reference.addValueEventListener(listener)
+    }
+
+    inner class DataListener : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            Log.w("MainActivity", "Inside onDataChange")
+
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            Log.w("MainActivity", "error: " + error.toString())
+        }
+
     }
 
     // Starts the game (starts activity_game view)

@@ -22,18 +22,17 @@ class Game(context: Context, highScore: Int) {
         val metrics : DisplayMetrics = context.resources.displayMetrics
         screenWidth = metrics.widthPixels
         screenHeight = metrics.heightPixels
-        val platformSpacing = 200f
+        val platformSpacing = 300f
         var lastPlatformY = screenHeight.toFloat()
-        // initialize 12 random platforms
+        // initialize 8 random platforms
         platforms = ArrayList()
 
-        for(i in 0..12) {
+        for(i in 0..8) {
             val p = Platform()
             if(i == 0) { // platform that the player will spawn on
                 p.setX(450f)
                 p.setY(2000f)
             } else {
-                p.setX(Random.nextFloat() * (screenWidth - p.getWidth()))
                 lastPlatformY -= platformSpacing
                 p.setX(Random.nextFloat() * (screenWidth - p.getWidth()))
                 p.setY(lastPlatformY)
