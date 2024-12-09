@@ -27,9 +27,6 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var timer : Timer
     private lateinit var sensorManager : SensorManager
     private lateinit var accelerometer : Sensor
-//    private var accelerometer : Sensor? =  null
-//    private var gyroscope : Sensor? = null
-//    private var rotationSensor : Sensor? = null
     private var tiltX : Float = 0f
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,19 +37,7 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
 
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)!!
-
-        // Prevents the screen rotation during accelerometer testing
-        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
     }
-
-    // Called when the user is active on the app, starts task/animation
-//    override fun onWindowFocusChanged(hasFocus: Boolean) {
-//        super.onWindowFocusChanged(hasFocus)
-//        var timer : Timer = Timer()
-//        var task : GameTimerTask = GameTimerTask(this)
-//        timer.schedule(task, 0L, GameView.DELTA_TIME.toLong())
-//        timer.scheduleAtFixedRate(task, 0L, GameView.DELTA_TIME.toLong())
-//    }
 
     // Ends the game (starts activity_end view)
     fun gameOver() {
@@ -121,7 +106,6 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
         super.onPause()
 
         sensorManager.unregisterListener(this)
-
         timer.cancel()
     }
 
@@ -133,7 +117,6 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
     override fun onSensorChanged(event : SensorEvent?) {
         event?.let {
             if (it.sensor.type == Sensor.TYPE_ACCELEROMETER) {
-//                Log.d("GameActivity", "TiltX: " + (-it.values[0]).toString())
                 tiltX = -it.values[0] // Invert X to match natural movement
                 game.getPlayer().setMovement(tiltX)
             }

@@ -47,7 +47,6 @@ class GameView : View {
         paint.color = Color.BLACK
         paint.strokeWidth = 20f
         paint.textSize = 60f
-
     }
 
     override fun onDraw(canvas: Canvas) {
