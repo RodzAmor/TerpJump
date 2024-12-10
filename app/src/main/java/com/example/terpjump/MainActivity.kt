@@ -53,6 +53,7 @@ class MainActivity : AppCompatActivity() {
         doodlerChoices.setOnCheckedChangeListener { _, checkedId ->
             val selection = when (checkedId) {
                 R.id.terrapin_doodler_radio -> "terrapin"
+                R.id.cool_terp_radio -> "coolterp"
                 else -> "doodler"
             }
 
