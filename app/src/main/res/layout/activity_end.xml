@@ -119,31 +119,57 @@
         android:layout_weight="8"
         android:layout_marginTop="40sp"
         android:orientation="vertical"
-        android:gravity="center">
+        android:gravity="center"
+        android:layout_centerHorizontal="true">
         <!--android:background="#FF0"-->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="20sp"
+            android:textSize="30sp"
             android:text="@string/leaderboard"
             android:textStyle="bold"
 
             android:layout_below="@id/play_again"
             android:layout_centerHorizontal="true"
             />
-        
-        <TextView
-            android:id="@+id/leaderboard"
+
+        <ScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:gravity="center"
-            />
+            android:layout_centerHorizontal="true"
+            >
+            <TableLayout
+                android:id="@+id/leaderboard_table"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true">
+                <TableRow>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Name"
+                        android:padding="10dp"
+                        android:textStyle="bold"
+                        android:textSize="18sp" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Score"
+                        android:padding="10dp"
+                        android:textStyle="bold"
+                        android:textSize="18sp" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Rating"
+                        android:padding="10dp"
+                        android:textStyle="bold"
+                        android:textSize="18sp" />
+                </TableRow>
+            </TableLayout>
+            
+        </ScrollView>
 
-<!--        <androidx.recyclerview.widget.RecyclerView-->
-<!--            android:id="@+id/leaderboard_recycler"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="match_parent" />-->
     </LinearLayout>
 
 

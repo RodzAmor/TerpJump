@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var doodlerChoices: RadioGroup
     private lateinit var doodlerSelection: RadioButton
     private lateinit var terrapinSelection: RadioButton
-    private lateinit var adView : AdView
+//    private lateinit var adView : AdView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,13 +74,11 @@ class MainActivity : AppCompatActivity() {
     inner class DataListener : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
             Log.w("MainActivity", "Inside onDataChange")
-
         }
 
         override fun onCancelled(error: DatabaseError) {
             Log.w("MainActivity", "error: " + error.toString())
         }
-
     }
 
     // Starts the game (starts activity_game view)

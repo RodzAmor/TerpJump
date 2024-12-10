@@ -1,6 +1,6 @@
 package com.example.terpjump
 
-class Platform {
+open class Platform {
     private var width : Float = 200f
     private var height : Float = 70f
     private var x : Float = 0f

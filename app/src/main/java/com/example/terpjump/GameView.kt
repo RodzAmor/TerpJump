@@ -26,7 +26,7 @@ class GameView : View {
     private val playerBitmapTerrapinLeft : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.terrapin_left)
     private val playerBitmapTerrapinRight : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.terrapin_right)
 
-    private val playerBitmap : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.doodle_left)
+//    private val playerBitmap : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.doodle_left)
     private val platformBitmap : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.blue_platform)
 
     constructor (context : Context, width : Int, height : Int) : super(context) {
@@ -73,7 +73,7 @@ class GameView : View {
         val player = game.getPlayer()
         val playerX: Float = player.getX()
         var playerY: Float = player.getY()
-        var playerBitmap = playerBitmap
+        var playerBitmap : Bitmap
 
         if (doodlerChoice.equals("terrapin")) {
             playerBitmap = when (player.getDirection()) {

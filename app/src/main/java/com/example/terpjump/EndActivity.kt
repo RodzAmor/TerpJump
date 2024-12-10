@@ -10,11 +10,14 @@ import android.location.Location
 import android.os.Bundle
 import android.renderscript.Sampler.Value
 import android.util.Log
+import android.view.Gravity
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.RatingBar
+import android.widget.TableLayout
+import android.widget.TableRow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
@@ -22,6 +25,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
@@ -30,9 +34,13 @@ import com.google.android.gms.location.LocationServices
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.installations.installations
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 // EndActivity handles the game over and leaderboard screen
 class EndActivity : AppCompatActivity() {
@@ -42,7 +50,7 @@ class EndActivity : AppCompatActivity() {
     private lateinit var gameScoreTV : TextView
     private lateinit var scoreTV : TextView
     private lateinit var highscoreTV : TextView
-    private lateinit var leaderboardTV : TextView
+    private lateinit var leaderboardTable : TableLayout
     private lateinit var homeButton : Button
     private lateinit var playerInputLayout : LinearLayout
     private lateinit var playerNameET : EditText
@@ -61,7 +69,7 @@ class EndActivity : AppCompatActivity() {
 
         scoreTV = findViewById(R.id.score)
         highscoreTV = findViewById(R.id.high_score)
-        leaderboardTV = findViewById(R.id.leaderboard)
+
         playAgainButton = findViewById(R.id.play_again)
         homeButton = findViewById(R.id.home)
         submitButton = findViewById(R.id.submit_button)
@@ -101,6 +109,7 @@ class EndActivity : AppCompatActivity() {
         Log.w("EndActivityDebug", "runs")
         var latitude = 0.0
         var longitude = 0.0
+
         fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
             if (location != null) {
                 latitude = location.latitude
@@ -152,14 +161,18 @@ class EndActivity : AppCompatActivity() {
     }
 
     fun submitToFirebase(name : String, rating : Float, score : Int) {
-        val database = FirebaseDatabase.getInstance()
-        val scoresRef = database.getReference("scores")
-        val newScoreRef = scoresRef.push()
+        val database : FirebaseDatabase = FirebaseDatabase.getInstance()
+        val scoresRef : DatabaseReference = database.getReference("scores")
+        val newScoreRef : DatabaseReference = scoresRef.push()
+
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        val currentDate = dateFormat.format(Date())
 
         val scoreData = mapOf(
             "name" to name,
             "score" to score,
-            "rating" to rating
+            "rating" to rating,
+            "date" to currentDate
         )
 
         newScoreRef.setValue(scoreData).addOnCompleteListener { task ->
@@ -182,43 +195,61 @@ class EndActivity : AppCompatActivity() {
         val database = FirebaseDatabase.getInstance()
         val scoresRef = database.getReference("scores")
 
-        scoresRef.orderByChild("score").limitToFirst(10) // Only getting 10
+        scoresRef.orderByChild("score").limitToLast(10) // Only getting 10
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    var leaderboard : String = "Name : Score : Rating \n"
+                    leaderboardTable = findViewById(R.id.leaderboard_table)
+                    leaderboardTable.removeAllViews()
+
+                    val headerRow : TableRow = TableRow(this@EndActivity)
+                    headerRow.addView(createCell("Name", true))
+                    headerRow.addView(createCell("Score", true))
+                    headerRow.addView(createCell("Rating", true))
+                    headerRow.addView(createCell("Date", true))
+
+                    leaderboardTable.addView(headerRow)
+
                     if (snapshot.exists()) {
-                        var leaderboardEntries = mutableListOf<Triple<String, Int, Float>>()
+                        var leaderboardEntries = mutableListOf<LeaderboardEntry>()
 
                         for (scoreSnapshot in snapshot.children) {
                             val name = scoreSnapshot.child("name").getValue(String::class.java) ?: ""
                             val score = scoreSnapshot.child("score").getValue(Int::class.java) ?: 0
                             val rating = scoreSnapshot.child("rating").getValue(Float::class.java) ?: 0f
+                            val date = scoreSnapshot.child("date").getValue(String::class.java) ?: "N/A"
 
-//                            Log.d("DEBUG", name + score.toString() + rating.toString())
-                            // We can also change how the leaderboard is displayed
-//                            leaderboard += "${name} : ${score} : ${rating} \n"
-
-                            leaderboardEntries.add(Triple(name, score, rating))
+                            leaderboardEntries.add(LeaderboardEntry(name, score, rating, date))
                         }
 
-                        leaderboardEntries.sortByDescending { it.second }
+                        leaderboardEntries.sortByDescending { it.score }
 
-                        for (leaderboardEntry in leaderboardEntries) {
-                            leaderboard += "${leaderboardEntry.first} : ${leaderboardEntry.second}" +
-                                    " : ${leaderboardEntry.third} \n"
+                        for (entry in leaderboardEntries) {
+                            val row = TableRow(this@EndActivity)
+                            row.addView(createCell(entry.name))
+                            row.addView(createCell(entry.score.toString()))
+                            row.addView(createCell(entry.rating.toString()))
+                            row.addView(createCell(entry.date.toString()))
+                            leaderboardTable.addView(row)
                         }
+
                     } else {
                         Log.d("DEBUG", "Snapshot does not exist")
                     }
-
-                    Log.d("DEBUG", "leaderboard: " + leaderboard)
-                    leaderboardTV.text = leaderboard
                 }
 
                 override fun onCancelled(error: DatabaseError) {
                     Log.d("DEBUG", "Failed to load leaderboard ${error.message}")
                 }
             })
+    }
+
+    private fun createCell(text : String, isHeader : Boolean = false) : TextView {
+        return TextView(this).apply {
+            this.text = text
+            this.textSize = if (isHeader) 20f else 16f
+            this.setPadding(10, 10, 10, 10)
+            this.gravity = Gravity.CENTER
+        }
     }
 
     // Starts the game again (starts activity_game view)

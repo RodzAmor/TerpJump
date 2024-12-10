@@ -28,7 +28,15 @@ class Game(context: Context, highScore: Int) {
         platforms = ArrayList()
 
         for(i in 0..8) {
-            val p = Platform()
+            var p : Platform
+
+            // 20% chance to make a trap platform
+            if (Random.nextInt(0, 5) == 0) {
+                p = TrapPlatform()
+            } else {
+                p = Platform()
+            }
+
             if(i == 0) { // platform that the player will spawn on
                 p.setX(450f)
                 p.setY(2000f)
@@ -77,6 +85,12 @@ class Game(context: Context, highScore: Int) {
     }
 
     fun update(context: Context) {
+        // Update player
+        var playerX: Float = player.getX()
+        var playerY: Float = player.getY()
+        val jumpVelocity : Float = player.getJumpVelocity()
+        val gravity : Float = player.getGravity()
+
         // Update platforms
         for (p in platforms) {
             val pX: Float = p.getX()
@@ -92,30 +106,33 @@ class Game(context: Context, highScore: Int) {
             }
         }
 
-        // Update player
-        var playerX: Float = player.getX()
-        var playerY: Float = player.getY()
-        val jumpVelocity : Float = player.getJumpVelocity()
-        val gravity : Float = player.getGravity()
-
         player.setJumpVelocity(jumpVelocity + gravity) // update jump acceleration
         playerY += jumpVelocity // update player Y position
         playerX += player.getMovement() // update player X position
 
         // Check for collision with platforms
         for (p in platforms) {
-            val pX: Float = p.getX()
-            val pY: Float = p.getY()
-            val pWidth: Float = p.getWidth()
-            val pHeight: Float = p.getHeight()
-
-            val playerRect = RectF(playerX, playerY, playerX + 100, playerY + 100)
-            val platformRect = RectF(pX, pY, pX + pWidth, pY + pHeight)
-
-            if (playerRect.intersect(platformRect) && jumpVelocity > 0) { // Check for overlap
-                if (playerY + 100 <= pY + 20) { // Check if the player is landing on the platform (bottom collision)
-                    player.setJumpVelocity(-40f) // player bounces up after collision
+            if (p is TrapPlatform) {
+                // Player width and height is 100
+                val isGameOver : Boolean = p.checkCollision(playerX, playerY, 100, 100)
+                if (isGameOver) {
+                    gameOver = true
                     break
+                }
+            } else {
+                val pX: Float = p.getX()
+                val pY: Float = p.getY()
+                val pWidth: Float = p.getWidth()
+                val pHeight: Float = p.getHeight()
+
+                val playerRect = RectF(playerX, playerY, playerX + 100, playerY + 100)
+                val platformRect = RectF(pX, pY, pX + pWidth, pY + pHeight)
+
+                if (playerRect.intersect(platformRect) && jumpVelocity > 0) { // Check for overlap
+                    if (playerY + 100 <= pY + 20) { // Check if the player is landing on the platform (bottom collision)
+                        player.setJumpVelocity(-40f) // player bounces up after collision
+                        break
+                    }
                 }
             }
         }
