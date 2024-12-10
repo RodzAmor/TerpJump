@@ -31,7 +31,8 @@ class Game(context: Context, highScore: Int) {
             var p : Platform
 
             // 20% chance to make a trap platform
-            if (Random.nextInt(0, 5) == 0) {
+            // Starting platform can't be where the player starts (i != 0)
+            if (Random.nextInt(0, 5) == 0 && i != 0) {
                 p = TrapPlatform()
             } else {
                 p = Platform()
@@ -114,7 +115,8 @@ class Game(context: Context, highScore: Int) {
         for (p in platforms) {
             if (p is TrapPlatform) {
                 // Player width and height is 100
-                val isGameOver : Boolean = p.checkCollision(playerX, playerY, 100, 100)
+                val isGameOver : Boolean = p.checkCollision(playerX, playerY,
+                    100f, 100f, jumpVelocity)
                 if (isGameOver) {
                     gameOver = true
                     break
