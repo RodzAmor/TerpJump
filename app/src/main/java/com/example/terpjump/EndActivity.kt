@@ -92,6 +92,7 @@ class EndActivity : AppCompatActivity() {
             Log.w("EndActivity", "Location Permission Granted")
         } else {
             Log.w("EndActivity", "Location Permission Not Granted, ask for it")
+            location = "N/A"
             var contract : ActivityResultContracts.RequestPermission =
                 ActivityResultContracts.RequestPermission()
             var results : Results = Results()
@@ -119,6 +120,7 @@ class EndActivity : AppCompatActivity() {
         Log.w("EndActivityDebug", "runs")
         var latitude = 0.0f
         var longitude = 0.0f
+
         fusedLocationClient.lastLocation.addOnSuccessListener { lastLocation: Location? ->
             if (lastLocation != null) {
                 latitude = lastLocation.latitude.toFloat()
@@ -128,10 +130,12 @@ class EndActivity : AppCompatActivity() {
                 callback(location)  // Return the result via the callback
             } else {
                 Log.w("EndActivity", "Failed to get location")
+                location = "N/A"
                 callback("N/A")  // Return a default value in case of failure
             }
         }.addOnFailureListener {
             Log.e("EndActivity", "Error getting location: ${it.message}")
+            location = "N/A"
             callback("N/A")  // Return a default value in case of error
         }
     }
@@ -142,8 +146,6 @@ class EndActivity : AppCompatActivity() {
                 Log.w("MainActivity", "User gave permission")
             } else {
                 Log.w("MainActivity", "User permission denied")
-                Toast.makeText(this@EndActivity, "Location permission is required",
-                    Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -227,15 +229,7 @@ class EndActivity : AppCompatActivity() {
         val database = FirebaseDatabase.getInstance()
         val scoresRef = database.getReference("scores")
 
-        val query = if (!regionalLeaderboard) {
-            // Worldwide leaderboard
-            scoresRef.orderByChild("score").limitToLast(10)
-        } else {
-            // Regional leaderboard
-            scoresRef.equalTo(location)
-                .orderByChild("region").limitToFirst(10)
-        }
-        query.addListenerForSingleValueEvent(object : ValueEventListener {
+        scoresRef.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     leaderboardTable = findViewById(R.id.leaderboard_table)
                     leaderboardTable.removeAllViews()
@@ -258,13 +252,14 @@ class EndActivity : AppCompatActivity() {
                             val rating = scoreSnapshot.child("rating").getValue(Float::class.java) ?: 0f
                             val date = scoreSnapshot.child("date").getValue(String::class.java) ?: "N/A"
                             val region = scoreSnapshot.child("region").getValue(String::class.java) ?: "N/A"
-
-                            leaderboardEntries.add(LeaderboardEntry(name, score, rating, date, region))
+                            if (!regionalLeaderboard || region == location) {
+                                leaderboardEntries.add(LeaderboardEntry(name, score, rating, date, region))
+                            }
                         }
 
                         leaderboardEntries.sortByDescending { it.score }
 
-                        for (entry in leaderboardEntries) {
+                        for (entry in leaderboardEntries.take(10)) {
                             val row = TableRow(this@EndActivity)
                             row.addView(createCell(entry.name))
                             row.addView(createCell(entry.score.toString()))
