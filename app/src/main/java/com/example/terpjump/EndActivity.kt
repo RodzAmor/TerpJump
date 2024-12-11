@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.graphics.Typeface
 import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
@@ -60,6 +59,8 @@ class EndActivity : AppCompatActivity() {
     private lateinit var launcher : ActivityResultLauncher<String>
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var location : String
+    private var regionalLeaderboard = false
+    private lateinit var switchLeaderboardButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,6 +77,9 @@ class EndActivity : AppCompatActivity() {
         submitButton = findViewById(R.id.submit_button)
         starRating = findViewById(R.id.rating_bar)
         playerNameET = findViewById<EditText>(R.id.player_name)
+        switchLeaderboardButton = findViewById<Button>(R.id.switchLeaderboardButton)
+        switchLeaderboardButton.setOnClickListener{ toggleLeaderboard() }
+
 
         // Display score in the input screen
         val score : Int = getIntent().getIntExtra("SCORE", 0)
@@ -85,7 +89,6 @@ class EndActivity : AppCompatActivity() {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             Log.w("EndActivity", "Location Permission Granted")
-            location = fetchLocation()
         } else {
             Log.w("EndActivity", "Location Permission Not Granted, ask for it")
             var contract : ActivityResultContracts.RequestPermission =
@@ -106,23 +109,31 @@ class EndActivity : AppCompatActivity() {
 
     }
 
-    private fun fetchLocation() : String {
-        Log.w("EndActivityDebug", "runs")
-        var latitude = 0.0
-        var longitude = 0.0
+    private fun toggleLeaderboard() {
+        regionalLeaderboard = !regionalLeaderboard
+        loadLeaderboard()
+    }
 
-        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-            if (location != null) {
-                latitude = location.latitude
-                longitude = location.longitude
+    private fun fetchLocation(callback: (String) -> Unit) {
+        Log.w("EndActivityDebug", "runs")
+        var latitude = 0.0f
+        var longitude = 0.0f
+
+        fusedLocationClient.lastLocation.addOnSuccessListener { lastLocation: Location? ->
+            if (lastLocation != null) {
+                latitude = lastLocation.latitude.toFloat()
+                longitude = lastLocation.longitude.toFloat()
+                location = detectContinent(latitude, longitude)
                 Log.w("EndActivity", "Lat: $latitude, Long: $longitude")
+                callback(location)  // Return the result via the callback
             } else {
                 Log.w("EndActivity", "Failed to get location")
+                callback("N/A")  // Return a default value in case of failure
             }
         }.addOnFailureListener {
             Log.e("EndActivity", "Error getting location: ${it.message}")
+            callback("N/A")  // Return a default value in case of error
         }
-        return "Lat: $latitude, Long: $longitude"
     }
 
     inner class Results : ActivityResultCallback<Boolean> {
@@ -137,6 +148,26 @@ class EndActivity : AppCompatActivity() {
         }
     }
 
+    // Latitude Longitude to continent converter
+    fun detectContinent(latitude: Float, longitude: Float): String {
+        if (latitude in 10.0f..84.0f && longitude in -168.0f..-50.0f) {
+            return "NA"
+        } else if (latitude in -60.0f..10.0f && longitude in -82.0f..-34.0f) {
+            return "SA"
+        } else if (latitude in 35.0f..70.0f && longitude in -10.0f..40.0f) {
+            return "EU"
+        } else if (latitude in -35.0f..35.0f && longitude in -20.0f..50.0f) {
+            return "AF"
+        } else if (latitude in 10.0f..80.0f && longitude in 30.0f..180.0f) {
+            return "AS"
+        } else if (latitude in -50.0f..0.0f && longitude in 110.0f..180.0f) {
+            return "OC"
+        } else if (latitude < -60.0f) {
+            return "AN"
+        }
+        return "N/A"
+    }
+
     fun submitScore() {
         var name = playerNameET.text.toString()
         var rating = starRating.rating
@@ -144,14 +175,13 @@ class EndActivity : AppCompatActivity() {
         if (name.isNotBlank()) {
             // send all data to firebase, including score
             val score : Int = getIntent().getIntExtra("SCORE", 0)
-            Log.w("EndActivity", "Name: $name, Rating: $rating, Score: $score, " +
-                    "Location: $location")
+            Log.w("EndActivity", "Name: $name, Rating: $rating, Score: $score")
 
             // Layout transition
             playerInputLayout.visibility = View.GONE
             gameOverLayout.visibility = View.VISIBLE
+            fetchLocation { region -> submitToFirebase(name, rating, score, region) }
 
-            submitToFirebase(name, rating, score)
             loadLeaderboard()
 
             updateScores()
@@ -161,19 +191,20 @@ class EndActivity : AppCompatActivity() {
         }
     }
 
-    fun submitToFirebase(name : String, rating : Float, score : Int) {
+    fun submitToFirebase(name : String, rating : Float, score : Int, region : String) {
         val database : FirebaseDatabase = FirebaseDatabase.getInstance()
         val scoresRef : DatabaseReference = database.getReference("scores")
         val newScoreRef : DatabaseReference = scoresRef.push()
 
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val currentDate = dateFormat.format(Date())
-
+        Log.w("EndActivityDebug", region)
         val scoreData = mapOf(
             "name" to name,
             "score" to score,
             "rating" to rating,
-            "date" to currentDate
+            "date" to currentDate,
+            "region" to region
         )
 
         newScoreRef.setValue(scoreData).addOnCompleteListener { task ->
@@ -196,8 +227,15 @@ class EndActivity : AppCompatActivity() {
         val database = FirebaseDatabase.getInstance()
         val scoresRef = database.getReference("scores")
 
-        scoresRef.orderByChild("score").limitToLast(10) // Only getting 10
-            .addListenerForSingleValueEvent(object : ValueEventListener {
+        val query = if (!regionalLeaderboard) {
+            // Worldwide leaderboard
+            scoresRef.orderByChild("score").limitToLast(10)
+        } else {
+            // Regional leaderboard
+            scoresRef.equalTo(location)
+                .orderByChild("region").limitToLast(10)
+        }
+        query.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     leaderboardTable = findViewById(R.id.leaderboard_table)
                     leaderboardTable.removeAllViews()
@@ -207,6 +245,7 @@ class EndActivity : AppCompatActivity() {
                     headerRow.addView(createCell("Score", true))
                     headerRow.addView(createCell("Rating", true))
                     headerRow.addView(createCell("Date", true))
+                    headerRow.addView(createCell("Region", true))
 
                     leaderboardTable.addView(headerRow)
 
@@ -218,8 +257,9 @@ class EndActivity : AppCompatActivity() {
                             val score = scoreSnapshot.child("score").getValue(Int::class.java) ?: 0
                             val rating = scoreSnapshot.child("rating").getValue(Float::class.java) ?: 0f
                             val date = scoreSnapshot.child("date").getValue(String::class.java) ?: "N/A"
+                            val region = scoreSnapshot.child("region").getValue(String::class.java) ?: "N/A"
 
-                            leaderboardEntries.add(LeaderboardEntry(name, score, rating, date))
+                            leaderboardEntries.add(LeaderboardEntry(name, score, rating, date, region))
                         }
 
                         leaderboardEntries.sortByDescending { it.score }
@@ -229,7 +269,8 @@ class EndActivity : AppCompatActivity() {
                             row.addView(createCell(entry.name))
                             row.addView(createCell(entry.score.toString()))
                             row.addView(createCell(entry.rating.toString()))
-                            row.addView(createCell(entry.date.toString()))
+                            row.addView(createCell(entry.date))
+                            row.addView(createCell(entry.region))
                             leaderboardTable.addView(row)
                         }
 
@@ -248,9 +289,8 @@ class EndActivity : AppCompatActivity() {
         return TextView(this).apply {
             this.text = text
             this.textSize = if (isHeader) 20f else 16f
-            this.setPadding(10, 10, 10, 10)
+            this.setPadding(5, 5, 5, 5)
             this.gravity = Gravity.CENTER
-            this.setTypeface(null, if (isHeader) Typeface.BOLD else Typeface.NORMAL)
         }
     }
 
