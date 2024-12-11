@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var doodlerChoices: RadioGroup
     private lateinit var doodlerSelection: RadioButton
     private lateinit var terrapinSelection: RadioButton
-//    private lateinit var adView : AdView
+    private lateinit var coolterpSelection : RadioButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         doodlerChoices = findViewById(R.id.doodler_selection_group)
         doodlerSelection = findViewById(R.id.original_doodler_radio)
         terrapinSelection = findViewById(R.id.terrapin_doodler_radio)
+        coolterpSelection = findViewById(R.id.cool_terp_radio)
         startButton = findViewById(R.id.start_button)
         startButton.setOnClickListener{ startGame() }
 
@@ -45,8 +46,9 @@ class MainActivity : AppCompatActivity() {
         val selectedDoodler = pref.getString(DOODLER_PREFERENCE, "terrapin")
         // This loads the saved selection
         when (selectedDoodler) {
-            "doodler" -> doodlerSelection.isChecked = true
-            else -> terrapinSelection.isChecked = true
+            "terrapin" -> terrapinSelection.isChecked = true
+            "coolterp" -> coolterpSelection.isChecked = true
+            else -> doodlerSelection.isChecked = true
         }
 
         // This sets the selection based on which one the user picks
