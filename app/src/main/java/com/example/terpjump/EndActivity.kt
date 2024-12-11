@@ -24,6 +24,7 @@ import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import com.google.android.gms.ads.AdRequest
@@ -118,7 +119,6 @@ class EndActivity : AppCompatActivity() {
         Log.w("EndActivityDebug", "runs")
         var latitude = 0.0f
         var longitude = 0.0f
-
         fusedLocationClient.lastLocation.addOnSuccessListener { lastLocation: Location? ->
             if (lastLocation != null) {
                 latitude = lastLocation.latitude.toFloat()
@@ -233,7 +233,7 @@ class EndActivity : AppCompatActivity() {
         } else {
             // Regional leaderboard
             scoresRef.equalTo(location)
-                .orderByChild("region").limitToLast(10)
+                .orderByChild("region").limitToFirst(10)
         }
         query.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
