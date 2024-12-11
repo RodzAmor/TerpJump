@@ -137,12 +137,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            >
+            android:layout_gravity="center">
             <TableLayout
                 android:id="@+id/leaderboard_table"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true">
+                android:layout_centerHorizontal="true"
+                android:gravity="center">
                 <TableRow>
                     <TextView
                         android:layout_width="match_parent"
@@ -167,9 +168,7 @@
                         android:textSize="18sp" />
                 </TableRow>
             </TableLayout>
-            
         </ScrollView>
-
     </LinearLayout>
 
 

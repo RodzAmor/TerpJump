@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.Typeface
 import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
@@ -165,7 +166,7 @@ class EndActivity : AppCompatActivity() {
         val scoresRef : DatabaseReference = database.getReference("scores")
         val newScoreRef : DatabaseReference = scoresRef.push()
 
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val currentDate = dateFormat.format(Date())
 
         val scoreData = mapOf(
@@ -249,6 +250,7 @@ class EndActivity : AppCompatActivity() {
             this.textSize = if (isHeader) 20f else 16f
             this.setPadding(10, 10, 10, 10)
             this.gravity = Gravity.CENTER
+            this.setTypeface(null, if (isHeader) Typeface.BOLD else Typeface.NORMAL)
         }
     }
 

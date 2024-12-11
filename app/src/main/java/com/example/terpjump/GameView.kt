@@ -29,6 +29,8 @@ class GameView : View {
 //    private val playerBitmap : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.doodle_left)
     private val platformBitmap : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.blue_platform)
     private val trapPlatformBitmap : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.red_platform)
+    private val breakingPlatformBitmap : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.breaking_platform)
+    private val brokenPlatformBitmap : Bitmap = BitmapFactory.decodeResource(resources, R.drawable.broken_platform)
 
     constructor (context : Context, width : Int, height : Int) : super(context) {
         this.width = width
@@ -68,11 +70,18 @@ class GameView : View {
             if (p is TrapPlatform) {
                 val trapPlatformBitmap : Bitmap = Bitmap.createScaledBitmap(trapPlatformBitmap, pWidth.toInt(), pHeight.toInt(), false)
                 canvas.drawBitmap(trapPlatformBitmap, pX, pY, paint)
+            } else if (p is BreakingPlatform) {
+                if (p.isBroken()) {
+                    val brokenPlatformBitmap : Bitmap = Bitmap.createScaledBitmap(brokenPlatformBitmap, pWidth.toInt(), pHeight.toInt(), false)
+                    canvas.drawBitmap(brokenPlatformBitmap, pX, pY, paint)
+                } else {
+                    val breakingPlatformBitmap : Bitmap = Bitmap.createScaledBitmap(breakingPlatformBitmap, pWidth.toInt(), pHeight.toInt(), false)
+                    canvas.drawBitmap(breakingPlatformBitmap, pX, pY, paint)
+                }
             } else {
                 val platformBitmap : Bitmap = Bitmap.createScaledBitmap(platformBitmap, pWidth.toInt(), pHeight.toInt(), false)
                 canvas.drawBitmap(platformBitmap, pX, pY, paint)
             }
-
         }
     }
 
